@@ -2,6 +2,8 @@
 #include "Utils.h"
 #include "Material.h"
 
+#include <iostream>
+
 namespace dae {
 
 #pragma region Base Scene
@@ -29,7 +31,36 @@ namespace dae {
 	void dae::Scene::GetClosestHit(const Ray& ray, HitRecord& closestHit) const
 	{
 		//todo W1
-		assert(false && "No Implemented Yet!");
+		for (size_t index = 0; index < m_SphereGeometries.size(); index++)
+		{
+			if (index != 0)
+			{
+				HitRecord tempHitRecord{};
+				GeometryUtils::HitTest_Sphere(m_SphereGeometries[index], ray, tempHitRecord);
+
+				if (tempHitRecord.t < closestHit.t)
+				{
+					closestHit = tempHitRecord;
+				}
+			}
+			else
+			{
+				GeometryUtils::HitTest_Sphere(m_SphereGeometries[index], ray, closestHit);
+			}
+		}
+
+		for (size_t index = 0; index < m_PlaneGeometries.size(); index++)
+		{
+			HitRecord tempHitRecord{};
+			GeometryUtils::HitTest_Plane(m_PlaneGeometries[index], ray, tempHitRecord);
+
+			if (tempHitRecord.t < closestHit.t)
+			{
+				closestHit = tempHitRecord;
+			}
+		}
+		
+		//assert(false && "No Implemented Yet!");
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const
@@ -125,6 +156,25 @@ namespace dae {
 		AddPlane({ 0.f, -75.f, 0.f }, { 0.f, 1.f,0.f }, matId_Solid_Yellow);
 		AddPlane({ 0.f, 75.f, 0.f }, { 0.f, -1.f,0.f }, matId_Solid_Yellow);
 		AddPlane({ 0.f, 0.f, 125.f }, { 0.f, 0.f,-1.f }, matId_Solid_Magenta);
+
+
+
+		/*
+		float dotResult{};
+		dotResult = Vector3::Dot(Vector3::UnitX, Vector3::UnitX);
+		std::cout << dotResult << '\n';
+		dotResult = Vector3::Dot(Vector3::UnitX, -Vector3::UnitX);
+		std::cout << dotResult << '\n';
+		dotResult = Vector3::Dot(Vector3::UnitX, Vector3::UnitY);
+		std::cout << dotResult << '\n';
+
+		Vector3 crossResult{};
+		crossResult = Vector3::Cross(Vector3::UnitZ, Vector3::UnitX);
+		std::cout << crossResult.x << ',' << crossResult.y << ',' << crossResult.z << '\n';
+		crossResult = Vector3::Cross(Vector3::UnitX, Vector3::UnitZ);
+		std::cout << crossResult.x << ',' << crossResult.y << ',' << crossResult.z << '\n';
+		*/
+
 	}
 #pragma endregion
 }

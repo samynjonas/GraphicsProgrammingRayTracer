@@ -4,6 +4,8 @@
 #include "Math.h"
 #include "DataTypes.h"
 
+#include <iostream>
+
 namespace dae
 {
 	namespace GeometryUtils
@@ -13,8 +15,43 @@ namespace dae
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W1
-			assert(false && "No Implemented Yet!");
-			return false;
+			//First triangle from ray origin to circle middle
+			Vector3 tc{};
+			tc = sphere.origin - ray.origin;
+
+			Vector3 P{};
+			P = Vector3::Project(tc, ray.direction);
+
+			//From ray-origin to projected point 
+			float dp = Vector3::Dot(tc, ray.direction);
+
+			//From projected-point to sphere origin
+			float od = sqrtf((tc.Magnitude() * tc.Magnitude()) - (dp * dp));
+
+			//Second triangle from hitpoint to circle origin
+			float tca = sqrtf((sphere.radius * sphere.radius) - (od * od));
+
+			//Distance from ray origin to hitpoint
+			float t0 = dp - tca;
+
+			//Hitpoint
+			Vector3 I = ray.origin + t0 * ray.direction;
+			
+
+			if (t0 > ray.min && t0 < ray.max)
+			{
+				hitRecord.didHit = true;
+				hitRecord.t = t0;
+				hitRecord.materialIndex = sphere.materialIndex;
+				hitRecord.origin = I;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+			/*assert(false && "No Implemented Yet!");
+			return false;*/
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -28,8 +65,52 @@ namespace dae
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W1
-			assert(false && "No Implemented Yet!");
-			return false;
+
+			//vector from ray origin to plane origin
+			Vector3 tc{};
+			tc = plane.origin - ray.origin;
+
+			Vector3 P{};
+			P = Vector3::Project(tc, ray.direction);
+
+			//From ray-origin to projected point 
+			float dp = Vector3::Dot(tc, ray.direction);
+
+			//From projected-point to plane origin
+			float od = sqrtf((tc.Magnitude() * tc.Magnitude()) - (dp * dp));
+
+			float tca = Vector3::Dot(plane.normal, P);
+
+			//Distance from ray origin to hitpoint NO CLUE HOW THIS NEEDS TO DO THE WORK
+			float t0 = dp - tca;
+
+
+			Vector3 n = plane.normal;
+
+			float t = Vector3::Dot( (plane.origin - ray.origin), n ) / Vector3::Dot(ray.direction, plane.normal);
+
+			Vector3 I = ray.origin + ((Vector3::Dot((plane.origin - ray.origin), n) / Vector3::Dot(ray.direction, n))) * ray.direction;
+
+			//Hitpoint
+			//Vector3 I = ray.origin + t0 * ray.direction;
+		
+
+			if (t > ray.min && t < ray.max)
+			{
+				hitRecord.didHit = true;
+				hitRecord.t = t;
+				hitRecord.materialIndex = plane.materialIndex;
+				hitRecord.origin = I;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+
+
+			/*assert(false && "No Implemented Yet!");
+			return false;*/
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
