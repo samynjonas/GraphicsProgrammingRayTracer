@@ -65,36 +65,10 @@ namespace dae
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W1
-
-			//vector from ray origin to plane origin
-			Vector3 tc{};
-			tc = plane.origin - ray.origin;
-
-			Vector3 P{};
-			P = Vector3::Project(tc, ray.direction);
-
-			//From ray-origin to projected point 
-			float dp = Vector3::Dot(tc, ray.direction);
-
-			//From projected-point to plane origin
-			float od = sqrtf((tc.Magnitude() * tc.Magnitude()) - (dp * dp));
-
-			float tca = Vector3::Dot(plane.normal, P);
-
-			//Distance from ray origin to hitpoint NO CLUE HOW THIS NEEDS TO DO THE WORK
-			float t0 = dp - tca;
-
-
 			Vector3 n = plane.normal;
-
 			float t = Vector3::Dot( (plane.origin - ray.origin), n ) / Vector3::Dot(ray.direction, plane.normal);
 
 			Vector3 I = ray.origin + ((Vector3::Dot((plane.origin - ray.origin), n) / Vector3::Dot(ray.direction, n))) * ray.direction;
-
-			//Hitpoint
-			//Vector3 I = ray.origin + t0 * ray.direction;
-		
-
 			if (t > ray.min && t < ray.max)
 			{
 				hitRecord.didHit = true;
