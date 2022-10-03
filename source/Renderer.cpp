@@ -42,26 +42,12 @@ void Renderer::Render(Scene* pScene) const
 			//Ray calculation
 			Vector3 rayDirection{ cx, cy, 1 };
 			rayDirection.Normalize();
-			Ray viewRay{ {0, 0, 0},  rayDirection };
+			Ray viewRay{ camera.origin,  rayDirection };
 			
-			
-			//ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z };
-			//ColorRGB finalColor{ gradient, gradient, gradient };
 			ColorRGB finalColor{};
 			HitRecord closestHit{};
 
 			pScene->GetClosestHit(viewRay, closestHit);
-
-			
-			//Sphere testSphere{ {0.f, 0.f, 100.f}, 50.f, 1 };
-			//GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
-			
-
-			//Plane testPlane{ { 0, -50.f, 0.f }, { 0.f, 1.f, 0.f }, 0 };
-			//GeometryUtils::HitTest_Plane(testPlane, viewRay, closestHit);
-			
-
-
 			if (closestHit.didHit)
 			{
 				//finalColor = materials[closestHit.materialIndex]->Shade();
@@ -72,7 +58,6 @@ void Renderer::Render(Scene* pScene) const
 
 				//finalColor = { 1 - scaled_t, 1 - scaled_t, 1 - scaled_t };
 			}
-
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();

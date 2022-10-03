@@ -35,23 +35,23 @@ namespace dae
 			float t0 = dp - tca;
 
 			//Hitpoint
-			Vector3 I = ray.origin + t0 * ray.direction;
-			
+			Vector3 I = ray.origin + t0 * ray.direction;			
 
 			if (t0 > ray.min && t0 < ray.max)
 			{
-				hitRecord.didHit = true;
-				hitRecord.t = t0;
-				hitRecord.materialIndex = sphere.materialIndex;
-				hitRecord.origin = I;
+				if (!ignoreHitRecord)
+				{
+					hitRecord.didHit = true;
+					hitRecord.t = t0;
+					hitRecord.materialIndex = sphere.materialIndex;
+					hitRecord.origin = I;
+				}
 				return true;
 			}
 			else
 			{
 				return false;
 			}
-			/*assert(false && "No Implemented Yet!");
-			return false;*/
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -71,20 +71,19 @@ namespace dae
 			Vector3 I = ray.origin + ((Vector3::Dot((plane.origin - ray.origin), n) / Vector3::Dot(ray.direction, n))) * ray.direction;
 			if (t > ray.min && t < ray.max)
 			{
-				hitRecord.didHit = true;
-				hitRecord.t = t;
-				hitRecord.materialIndex = plane.materialIndex;
-				hitRecord.origin = I;
+				if (!ignoreHitRecord)
+				{
+					hitRecord.didHit = true;
+					hitRecord.t = t;
+					hitRecord.materialIndex = plane.materialIndex;
+					hitRecord.origin = I;
+				}
 				return true;
 			}
 			else
 			{
 				return false;
 			}
-
-
-			/*assert(false && "No Implemented Yet!");
-			return false;*/
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
