@@ -63,7 +63,22 @@ namespace dae {
 	bool Scene::DoesHit(const Ray& ray) const
 	{
 		//todo W3
-		assert(false && "No Implemented Yet!");
+		for (size_t index = 0; index < m_SphereGeometries.size(); index++)
+		{
+			HitRecord tempHitRecord{};
+			if (GeometryUtils::HitTest_Sphere(m_SphereGeometries[index], ray, tempHitRecord))
+			{
+				return true;
+			}
+		}
+		for (size_t index = 0; index < m_PlaneGeometries.size(); index++)
+		{
+			HitRecord tempHitRecord{};
+			if (GeometryUtils::HitTest_Plane(m_PlaneGeometries[index], ray, tempHitRecord))
+			{
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -176,7 +191,7 @@ namespace dae {
 #pragma region SCENE W2
 	void Scene_W2::Initialize()
 	{
-		m_Camera.origin = {0.f, 3.f, -9.f};
+		m_Camera.origin = { 0.f, 3.f, -9.f };
 		m_Camera.fovAngle = 45.f;
 
 		//default: Material id0 >> SolidColor Material (RED)

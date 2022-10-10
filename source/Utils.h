@@ -14,7 +14,6 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
 			//First triangle from ray origin to circle middle
 			Vector3 tc{};
 			tc = sphere.origin - ray.origin;
@@ -48,10 +47,7 @@ namespace dae
 				}
 				return true;
 			}
-			else
-			{
-				return false;
-			}
+			return false;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -80,10 +76,7 @@ namespace dae
 				}
 				return true;
 			}
-			else
-			{
-				return false;
-			}
+			return false;
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
@@ -129,8 +122,7 @@ namespace dae
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
 			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
+			return origin - light.origin;
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)

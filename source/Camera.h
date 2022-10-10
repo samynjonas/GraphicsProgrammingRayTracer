@@ -33,13 +33,11 @@ namespace dae
 		float totalYaw{0.f};
 
 		Matrix cameraToWorld{};
-
-
 		Matrix CalculateCameraToWorld()
 		{
 			//todo: W2
 			Matrix cameraONB;
-			Vector3 worldUp{ Vector3::UnitY };
+			Vector3 worldUp{ 0, 1, 0 };
 			
 			right	= Vector3::Cross(worldUp, forward).Normalized();
 			up		= Vector3::Cross(forward, right).Normalized();
@@ -57,30 +55,63 @@ namespace dae
 
 			float currentSpeed{ 10.f };
 
+			currentSpeed *= deltaTime;
+
 			if (pKeyboardState[SDL_SCANCODE_LEFT])
 			{
-				origin.x -= currentSpeed * deltaTime;
+				origin.x -= currentSpeed;
 			}
 			if (pKeyboardState[SDL_SCANCODE_RIGHT])
 			{
-				origin.x += currentSpeed * deltaTime;
+				origin.x += currentSpeed;
 			}
 			if (pKeyboardState[SDL_SCANCODE_UP])
 			{
-				origin.z += currentSpeed * deltaTime;
+				origin.z += currentSpeed;
 			}
 			if (pKeyboardState[SDL_SCANCODE_DOWN])
 			{
-				origin.z -= currentSpeed * deltaTime;
+				origin.z -= currentSpeed;
 			}
 
 			//Mouse Input
+			int prevMouseX{}, prevMouseY{};
 			int mouseX{}, mouseY{};
+			int offset{ 5 };
+			float angleChange{ 1.f* deltaTime };
+
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);			
 			
+			if ((mouseState & SDL_BUTTON_RMASK) != 0)
+			{
+				//Right mousebutton pressed
+				//Left mousebutton pressed
+				if (mouseX > prevMouseX + offset)
+				{
+					//moving right
+					forward = Matrix::CreateRotationY(angleChange).TransformVector(forward);
+				}
+				else if (mouseX < prevMouseX - offset)
+				{
+					//moving left
+					forward = Matrix::CreateRotationY(-angleChange).TransformVector(forward);
+				}
+
+				if (mouseY > prevMouseY + offset)
+				{
+					//moving up
+					forward = Matrix::CreateRotationX(-angleChange).TransformVector(forward);
+				}
+				else if (mouseY < prevMouseY - offset)
+				{
+					//moving down
+					forward = Matrix::CreateRotationX(angleChange).TransformVector(forward);
+				}
+
+			}
+			forward.Normalize();
 
 			//todo: W2
-			//assert(false && "Not Implemented Yet");
 		}
 	};
 }

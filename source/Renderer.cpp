@@ -58,11 +58,23 @@ void Renderer::Render(Scene* pScene) const
 			pScene->GetClosestHit(viewRay, closestHit);
 			if (closestHit.didHit)
 			{
-				//finalColor = materials[closestHit.materialIndex]->Shade();
+				finalColor = materials[closestHit.materialIndex]->Shade();
+				for (size_t index = 0; index < lights.size(); index++)
+				{
+					Vector3 startPos{ closestHit.origin };
+					startPos.y += 0.1f;
 
-				const float scaled_t = -closestHit.t / 250.f;
-				ColorRGB colorShading = materials[closestHit.materialIndex]->Shade();
-				finalColor = { (scaled_t) * colorShading.r, (scaled_t) * colorShading.g, (scaled_t) * colorShading .b};
+					Vector3 lightVector{ LightUtils::GetDirectionToLight(lights[index], startPos) };
+					Ray lightRay{ lights[index].origin, rayDirection};
+
+					if (pScene->DoesHit(lightRay))
+					{
+						finalColor *= 0.5f;
+					}
+				}
+				//const float scaled_t = -closestHit.t / 250.f;
+				//ColorRGB colorShading = materials[closestHit.materialIndex]->Shade();
+				//finalColor = { (scaled_t) * colorShading.r, (scaled_t) * colorShading.g, (scaled_t) * colorShading .b};
 
 				//finalColor = { 1 - scaled_t, 1 - scaled_t, 1 - scaled_t };
 			}
