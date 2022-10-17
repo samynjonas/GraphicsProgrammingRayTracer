@@ -58,20 +58,26 @@ void Renderer::Render(Scene* pScene) const
 			pScene->GetClosestHit(viewRay, closestHit);
 			if (closestHit.didHit)
 			{
-				finalColor = materials[closestHit.materialIndex]->Shade();
-				for (size_t index = 0; index < lights.size(); index++)
+				//finalColor = materials[closestHit.materialIndex]->Shade();
+				finalColor += LightUtils::GetRadiance(lights[0], rayDirection);
+
+				if (m_ShadowsEnabled)
 				{
-					Vector3 startPos{ closestHit.origin };
-					startPos.y += 0.1f;
-
-					Vector3 lightVector{ LightUtils::GetDirectionToLight(lights[index], startPos) };
-					Ray lightRay{ lights[index].origin, rayDirection};
-
-					if (pScene->DoesHit(lightRay))
+					for (size_t index = 0; index < lights.size(); index++)
 					{
-						finalColor *= 0.5f;
+						Vector3 startPos{ closestHit.origin };
+						startPos.y += 0.1f;
+
+						Vector3 lightVector{ LightUtils::GetDirectionToLight(lights[index], startPos) };
+						Ray lightRay{ lights[index].origin, rayDirection };
+
+						if (pScene->DoesHit(lightRay))
+						{
+							finalColor *= 0.5f;
+						}
 					}
 				}
+				
 				//const float scaled_t = -closestHit.t / 250.f;
 				//ColorRGB colorShading = materials[closestHit.materialIndex]->Shade();
 				//finalColor = { (scaled_t) * colorShading.r, (scaled_t) * colorShading.g, (scaled_t) * colorShading .b};
@@ -97,4 +103,23 @@ void Renderer::Render(Scene* pScene) const
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
+}
+
+void Renderer::ModeSwitcher()
+{
+	const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+
+	if (pKeyboardState[SDL_SCANCODE_F2])
+	{
+		m_ShadowsEnabled != m_ShadowsEnabled;
+	}
+
+	if (pKeyboardState[SDL_SCANCODE_F3])
+	{
+		int currentMode{ int(m_CurrentLightingMode) };
+		
+		++currentMode % int(LightingMode::Combined);
+
+		static_cast<LightingMode>(currentMode);
+	}
 }

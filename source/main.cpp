@@ -46,7 +46,8 @@ int main(int argc, char* args[])
 	const auto pRenderer = new Renderer(pWindow);
 
 	//const auto pScene = new Scene_W1();
-	const auto pScene = new Scene_W2();
+	//const auto pScene = new Scene_W2();
+	const auto pScene = new Scene_W3_TestScene();
 	pScene->Initialize();
 
 	//Start loop
@@ -76,6 +77,7 @@ int main(int argc, char* args[])
 		pScene->Update(pTimer);
 
 		//--------- Render ---------
+		pRenderer->ModeSwitcher(); //Check input for switching mode
 		pRenderer->Render(pScene);
 
 		//--------- Timer ---------
