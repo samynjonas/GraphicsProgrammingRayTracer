@@ -58,8 +58,8 @@ void Renderer::Render(Scene* pScene) const
 			pScene->GetClosestHit(viewRay, closestHit);
 			if (closestHit.didHit)
 			{
-				//finalColor = materials[closestHit.materialIndex]->Shade();
-				finalColor += LightUtils::GetRadiance(lights[0], rayDirection);
+				finalColor = materials[closestHit.materialIndex]->Shade();
+				//finalColor += LightUtils::GetRadiance(lights[0], rayDirection);
 
 				if (m_ShadowsEnabled)
 				{

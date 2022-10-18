@@ -75,8 +75,8 @@ namespace dae
 			}
 
 			//Mouse Input
-			int prevMouseX{}, prevMouseY{};
-			int mouseX{}, mouseY{};
+			int prevMouseX{},	prevMouseY{};
+			int mouseX{},		mouseY{};
 			int offset{ 5 };
 			float angleChange{ 1.f* deltaTime };
 
