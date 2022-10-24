@@ -36,6 +36,9 @@ namespace dae
 			//Hitpoint
 			Vector3 I = ray.origin + t0 * ray.direction;			
 
+			Vector3 normal = (I - sphere.origin).Normalized();
+
+
 			if (t0 > ray.min && t0 < ray.max)
 			{
 				if (!ignoreHitRecord)
@@ -44,6 +47,7 @@ namespace dae
 					hitRecord.t = t0;
 					hitRecord.materialIndex = sphere.materialIndex;
 					hitRecord.origin = I;
+					hitRecord.normal = normal;
 				}
 				return true;
 			}
@@ -73,6 +77,7 @@ namespace dae
 					hitRecord.t = t;
 					hitRecord.materialIndex = plane.materialIndex;
 					hitRecord.origin = I;
+					hitRecord.normal = n;
 				}
 				return true;
 			}
@@ -134,7 +139,7 @@ namespace dae
 			}
 			else if(light.type == LightType::Point)
 			{
-				return light.color * (light.intensity / powf((light.origin.x - target.x) + (light.origin.y - target.y) + (light.origin.z - target.z), 2.f) );
+				return light.color * (light.intensity / ( powf((light.origin.x - target.x), 2.f) + powf((light.origin.y - target.y), 2.f) + powf((light.origin.z - target.z), 2.f)));
 			}
 			return {};
 		}

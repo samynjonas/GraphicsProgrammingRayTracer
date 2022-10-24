@@ -42,12 +42,15 @@ int main(int argc, char* args[])
 		return 1;
 
 	//Initialize "framework"
-	const auto pTimer = new Timer();
-	const auto pRenderer = new Renderer(pWindow);
+	const auto pTimer		= new Timer();
+	const auto pRenderer	= new Renderer(pWindow);
 
 	//const auto pScene = new Scene_W1();
 	//const auto pScene = new Scene_W2();
-	const auto pScene = new Scene_W2();
+	const auto pScene = new Scene_W3();
+	//const auto pScene = new Scene_W3_TestScene();
+
+
 	pScene->Initialize();
 
 	//Start loop
@@ -67,8 +70,18 @@ int main(int argc, char* args[])
 				isLooping = false;
 				break;
 			case SDL_KEYUP:
-				if(e.key.keysym.scancode == SDL_SCANCODE_X)
+				if (e.key.keysym.scancode == SDL_SCANCODE_X)
+				{
 					takeScreenshot = true;
+				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F2)
+				{
+					pRenderer->SwitchShadows();
+				}
+				if (e.key.keysym.scancode == SDL_SCANCODE_F3)
+				{
+					pRenderer->ModeSwitcher();
+				}
 				break;
 			}
 		}
@@ -77,7 +90,6 @@ int main(int argc, char* args[])
 		pScene->Update(pTimer);
 
 		//--------- Render ---------
-		pRenderer->ModeSwitcher(); //Check input for switching mode
 		pRenderer->Render(pScene);
 
 		//--------- Timer ---------

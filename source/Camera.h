@@ -23,11 +23,12 @@ namespace dae
 		}
 
 		Vector3 origin{};
-		float fovAngle{90.f};
+		float fovAngle{ 90.f };
 
 		Vector3 forward{ 0.266f,  -0.453f,  0.860f };
-		Vector3 up{ Vector3::UnitY };
-		Vector3 right{ Vector3::UnitX };
+
+		Vector3 up{		Vector3::UnitY };
+		Vector3 right{	Vector3::UnitX };
 
 		float totalPitch{0.f};
 		float totalYaw{0.f};
@@ -49,36 +50,34 @@ namespace dae
 		void Update(Timer* pTimer)
 		{
 			const float deltaTime = pTimer->GetElapsed();
+			const float currentSpeed{ 5.f };
 
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
-			float currentSpeed{ 10.f };
-
-			currentSpeed *= deltaTime;
-
 			if (pKeyboardState[SDL_SCANCODE_LEFT])
 			{
-				origin.x -= currentSpeed;
+				origin.x = -currentSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_RIGHT])
 			{
-				origin.x += currentSpeed;
+				origin.x += currentSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_UP])
 			{
-				origin.z += currentSpeed;
+				origin.z += currentSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_DOWN])
 			{
-				origin.z -= currentSpeed;
+				origin.z -= currentSpeed * deltaTime;
 			}
+
 
 			//Mouse Input
 			int prevMouseX{},	prevMouseY{};
 			int mouseX{},		mouseY{};
-			int offset{ 5 };
-			float angleChange{ 1.f* deltaTime };
+			const int offset{ 5 };
+			const float angleChange{ 1.f * deltaTime };
 
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);			
 			

@@ -22,7 +22,9 @@ namespace dae
 
 		void Render(Scene* pScene) const;
 		bool SaveBufferToImage() const;
+
 		void ModeSwitcher();
+		void SwitchShadows();
 
 	private:
 		SDL_Window* m_pWindow{};

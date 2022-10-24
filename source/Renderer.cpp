@@ -47,7 +47,8 @@ void Renderer::Render(Scene* pScene) const
 			Vector3 rayDirection{ cx, cy, 1 };
 			rayDirection.Normalize();
 
-			const Matrix cameraToWorld = camera.CalculateCameraToWorld();			
+			const Matrix cameraToWorld = camera.CalculateCameraToWorld();	
+
 			rayDirection = cameraToWorld.TransformVector(rayDirection);
 
 			Ray viewRay{ camera.origin,  rayDirection };
@@ -58,18 +59,32 @@ void Renderer::Render(Scene* pScene) const
 			pScene->GetClosestHit(viewRay, closestHit);
 			if (closestHit.didHit)
 			{
-				finalColor = materials[closestHit.materialIndex]->Shade();
-				//finalColor += LightUtils::GetRadiance(lights[0], rayDirection);
+				//finalColor = materials[closestHit.materialIndex]->Shade();
+
+				for (size_t index = 0; index < lights.size(); index++)
+				{
+					ColorRGB addColor = LightUtils::GetRadiance(lights[index], closestHit.origin) * materials[closestHit.materialIndex]->Shade();
+					finalColor += addColor;
+
+					//Dot products always gives 0
+					/*float dotProduct = Vector3::Dot(closestHit.normal, lights[index].direction);
+					if (dotProduct > 0)
+					{
+						ColorRGB addColor = LightUtils::GetRadiance(lights[index], closestHit.origin) * BRDFrgb * dotProduct;
+						finalColor += addColor;
+					}*/
+				}
 
 				if (m_ShadowsEnabled)
 				{
 					for (size_t index = 0; index < lights.size(); index++)
 					{
-						Vector3 startPos{ closestHit.origin };
-						startPos.y += 0.1f;
+						Vector3 startPos{ closestHit.normal };
+						//startPos += 0.01f;
 
-						Vector3 lightVector{ LightUtils::GetDirectionToLight(lights[index], startPos) };
-						Ray lightRay{ lights[index].origin, rayDirection };
+						Vector3 lightVector{ LightUtils::GetDirectionToLight(lights[index], closestHit.origin) };
+
+						Ray lightRay{ startPos, lightVector.Normalized(), 0.000001f, lightVector.Magnitude()};
 
 						if (pScene->DoesHit(lightRay))
 						{
@@ -77,12 +92,6 @@ void Renderer::Render(Scene* pScene) const
 						}
 					}
 				}
-				
-				//const float scaled_t = -closestHit.t / 250.f;
-				//ColorRGB colorShading = materials[closestHit.materialIndex]->Shade();
-				//finalColor = { (scaled_t) * colorShading.r, (scaled_t) * colorShading.g, (scaled_t) * colorShading .b};
-
-				//finalColor = { 1 - scaled_t, 1 - scaled_t, 1 - scaled_t };
 			}
 
 			//Update Color in Buffer
@@ -107,19 +116,14 @@ bool Renderer::SaveBufferToImage() const
 
 void Renderer::ModeSwitcher()
 {
-	const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+	int currentMode{ int(m_CurrentLightingMode) };
 
-	if (pKeyboardState[SDL_SCANCODE_F2])
-	{
-		m_ShadowsEnabled != m_ShadowsEnabled;
-	}
+	++currentMode% int(LightingMode::Combined);
 
-	if (pKeyboardState[SDL_SCANCODE_F3])
-	{
-		int currentMode{ int(m_CurrentLightingMode) };
-		
-		++currentMode % int(LightingMode::Combined);
+	static_cast<LightingMode>(currentMode);
+}
 
-		static_cast<LightingMode>(currentMode);
-	}
+void Renderer::SwitchShadows()
+{
+	m_ShadowsEnabled = !m_ShadowsEnabled;
 }
