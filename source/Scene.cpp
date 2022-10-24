@@ -58,6 +58,28 @@ namespace dae {
 				closestHit = tempHitRecord;
 			}
 		}
+
+		/*for (size_t index = 0; index < m_Triangles.size(); index++)
+		{
+			HitRecord tempHitRecord{};
+			GeometryUtils::HitTest_Triangle(m_Triangles[index], ray, tempHitRecord);
+
+			if (tempHitRecord.t < closestHit.t)
+			{
+				closestHit = tempHitRecord;
+			}
+		}*/
+
+		for (size_t index = 0; index < m_TriangleMeshGeometries.size(); index++)
+		{
+			HitRecord tempHitRecord{};
+			GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[index], ray, tempHitRecord);
+
+			if (tempHitRecord.t < closestHit.t)
+			{
+				closestHit = tempHitRecord;
+			}
+		}
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const
@@ -79,6 +101,23 @@ namespace dae {
 				return true;
 			}
 		}
+		/*for (size_t index = 0; index < m_Triangles.size(); index++)
+		{
+			HitRecord tempHitRecord{};
+			if (GeometryUtils::HitTest_Triangle(m_Triangles[index], ray, tempHitRecord))
+			{
+				return true;
+			}
+		}*/
+		for (size_t index = 0; index < m_TriangleMeshGeometries.size(); index++)
+		{
+			HitRecord tempHitRecord{};
+			if (GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[index], ray, tempHitRecord))
+			{
+				return true;
+			}
+		}
+
 		return false;
 	}
 
@@ -283,29 +322,47 @@ namespace dae {
 	}
 #pragma endregion
 
-#pragma region SCENE W3 TestScene
+#pragma region SCENE W4 TestScene
 	void Scene_W4_TestScene::Initialize()
 	{
 		m_Camera.origin = { 0.f, 1.f, -5.f };
+		m_Camera.totalYaw = 0;
 		m_Camera.fovAngle = 45.f;
 
 		//Materials
-		const auto matLambert_GrayBlue = AddMaterial(new Material_Lambert({ .49f, 0.57f, 0.57f }, 1.f));
-		const auto matLambert_White = AddMaterial(new Material_Lambert(colors::White, 1.0f));
+		const auto matLambert_GrayBlue	= AddMaterial(new Material_Lambert({ .49f, 0.57f, 0.57f }, 1.f));
+		const auto matLambert_White		= AddMaterial(new Material_Lambert(colors::White, 1.0f));
 
 		//Planes
-		AddPlane(Vector3{ 0.f, 0.f, 10.f }, Vector3{ 0.f, 0.f, -1.f }, matLambert_GrayBlue);
-		AddPlane(Vector3{ 0.f, 0.f, 0.f }, Vector3{ 0.f, 1.f, 0.f }, matLambert_GrayBlue);
-		AddPlane(Vector3{ 0.f, 10.f, 0.f }, Vector3{ 0.f, -1.f, 0.f }, matLambert_GrayBlue);
-		AddPlane(Vector3{ 5.f, 0.f, 0.f }, Vector3{ -1.f, 0.f, 0.f }, matLambert_GrayBlue);
-		AddPlane(Vector3{ -5.f, 0.f, 0.f }, Vector3{ 1.f, 0.f, 0.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f, 0.f, 10.f }, Vector3{ 0.f, 0.f, -1.f },	matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f, 0.f, 0.f },	Vector3{ 0.f, 1.f, 0.f },	matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f, 10.f, 0.f }, Vector3{ 0.f, -1.f, 0.f },	matLambert_GrayBlue);
+		AddPlane(Vector3{ 5.f, 0.f, 0.f },	Vector3{ -1.f, 0.f, 0.f },	matLambert_GrayBlue);
+		AddPlane(Vector3{ -5.f, 0.f, 0.f }, Vector3{ 1.f, 0.f, 0.f },	matLambert_GrayBlue);
 
 		//Triangle
-		auto triangle = Triangle{ {-.75f, .5f, .0f}, {-.75f, 2.f, .0f}, {.75f, .5f, 0.f} };
+		/*auto triangle = Triangle{ {-.75f, .5f, .0f}, {-.75f, 2.f, .0f}, {.75f, .5f, 0.f} };
 		triangle.cullMode = TriangleCullMode::NoCulling;
 		triangle.materialIndex = matLambert_White;
 
-		
+		m_Triangles.emplace_back(triangle);*/
+
+		//TriangleMesh
+		const auto triangleMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		triangleMesh->positions = { {-.75f, -1.f, 0.f}, {-.75f, 1.f, .0f}, {.75f, 1.f, 1.f}, {.75f, -1.f, 0.f} };
+		triangleMesh->indices = {
+			0, 1, 2, //Triangle 1
+			0, 2, 3 //Triangle 2
+		};
+
+		triangleMesh->CalculateNormals();
+		triangleMesh->UpdateTransforms();
+
+
+		//Light
+		AddPointLight(Vector3{ 0.f, 5.f, 5.f },		50.f, ColorRGB{ 1.f,	.61f,	.45f });
+		AddPointLight(Vector3{ -2.5f, 5.f, -5.f },	70.f, ColorRGB{ 1.f,	.8f,	.45f });
+		AddPointLight(Vector3{ 2.5f, 2.5f, -5.f },	50.f, ColorRGB{ .34f,	.47f,	.68f });	
 
 	}
 #pragma endregion

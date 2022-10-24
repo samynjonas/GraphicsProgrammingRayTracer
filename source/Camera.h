@@ -57,7 +57,7 @@ namespace dae
 
 			if (pKeyboardState[SDL_SCANCODE_LEFT])
 			{
-				origin.x = -currentSpeed * deltaTime;
+				origin.x += -currentSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_RIGHT])
 			{
@@ -69,7 +69,7 @@ namespace dae
 			}
 			if (pKeyboardState[SDL_SCANCODE_DOWN])
 			{
-				origin.z -= currentSpeed * deltaTime;
+				origin.z += -currentSpeed * deltaTime;
 			}
 
 

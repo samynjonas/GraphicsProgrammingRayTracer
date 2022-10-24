@@ -91,12 +91,10 @@ namespace dae
 		{
 			translationTransform = Matrix::CreateTranslation(translation);
 		}
-
 		void RotateY(float yaw)
 		{
 			rotationTransform = Matrix::CreateRotationY(yaw);
 		}
-
 		void Scale(const Vector3& scale)
 		{
 			scaleTransform = Matrix::CreateScale(scale);
@@ -123,20 +121,50 @@ namespace dae
 
 		void CalculateNormals()
 		{
-			assert(false && "No Implemented Yet!");
+			//Look at 3 indices, get position of those indices, calculate normal
+			//3 indices are 1 triangle
+			//indices is index for position
+
+			std::vector<int> oneTriangle;
+			for (size_t index = 0; index < indices.size(); index++)
+			{
+				oneTriangle.push_back(indices[index]);
+				if (oneTriangle.size() == 3)
+				{
+					//Creating edges
+					Vector3 a = positions[oneTriangle[1]] - positions[oneTriangle[0]];
+					Vector3 b = positions[oneTriangle[2]] - positions[oneTriangle[0]];
+
+					//Normal of triangle
+					Vector3 normal = Vector3::Cross(a, b);
+
+					normals.push_back(normal);
+
+					oneTriangle.clear();
+				}
+			}
+
+
 		}
 
 		void UpdateTransforms()
 		{
-			assert(false && "No Implemented Yet!");
-			//Calculate Final Transform 
-			//const auto finalTransform = ...
+			//Calculate Final Transform
+			transformedPositions.clear();
+			transformedNormals.clear();
 
-			//Transform Positions (positions > transformedPositions)
-			//...
+			const auto finalTransform = rotationTransform * translationTransform * scaleTransform;
+			
+			for (size_t index = 0; index < positions.size(); ++index)
+			{
+				transformedPositions.push_back(finalTransform.TransformPoint(positions[index]));
+			}
 
-			//Transform Normals (normals > transformedNormals)
-			//...
+			for (size_t index = 0; index < normals.size(); ++index)
+			{
+				transformedNormals.push_back(finalTransform.TransformPoint(normals[index]));
+			}
+
 		}
 	};
 #pragma endregion
