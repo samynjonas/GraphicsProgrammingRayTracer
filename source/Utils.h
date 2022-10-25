@@ -14,56 +14,68 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//First triangle from ray origin to circle middle
-			Vector3 tc{};
-			tc = sphere.origin - ray.origin;
+			Vector3 d = ray.direction;
 
-			Vector3 P{};
-			P = Vector3::Project(tc, ray.direction);
+			float A = Vector3::Dot(ray.direction, ray.direction);
+			float B = 2 * Vector3::Dot( d, (ray.origin - sphere.origin));
+			float C = Vector3::Dot((ray.origin - sphere.origin), (ray.origin - sphere.origin)) - powf(sphere.radius, 2.f);
 
-			//From ray-origin to projected point 
-			float dp = Vector3::Dot(tc, ray.direction);
-
-			//From projected-point to sphere origin
-			float od = sqrtf((tc.Magnitude() * tc.Magnitude()) - (dp * dp));
-
-			//Second triangle from hitpoint to circle origin
-			float tca = sqrtf((sphere.radius * sphere.radius) - (od * od));
-
-			//Distance from ray origin to hitpoint
-			float t0 = dp - tca;
-
-			//Hitpoint
-			Vector3 I = ray.origin + t0 * ray.direction;
-
-			Vector3 normal = Vector3::Cross(P, tc);
-
-			if (t0 > ray.min && t0 < ray.max)
+			float discriminat = powf(B, 2.f) - 4 * A * C;
+			if (discriminat <= 0)
 			{
-				if (!ignoreHitRecord)
-				{
-					hitRecord.didHit = true;
-					hitRecord.t = t0;
-					hitRecord.materialIndex = sphere.materialIndex;
-					hitRecord.origin = I;
-					hitRecord.normal = normal;
-				}
-				return true;
+				return false;
 			}
-			return false;
-		}
+			if (discriminat < ray.min || discriminat > ray.max)
+			{
+				return false;
+			}
 
+
+			float t = (-B - sqrtf(discriminat)) / (2 * A);
+			if (t < ray.min)
+			{
+				t = (-B + sqrtf(discriminat)) / (2 * A);
+			}
+
+			////Geometric
+			//Vector3 L = sphere.origin - ray.origin;
+			//float tca = Vector3::Dot(L, ray.direction);
+			//float od = sqrt(Vector3::Dot(L, L) - tca * tca);
+			//float thc = sqrt(powf(sphere.radius, 2.f) - powf(od, 2.f));
+
+			//float t0 = tca - thc;
+			//float t1 = tca + thc;
+
+			Vector3 P = ray.origin + t * ray.direction;
+			Vector3 normal = (P - sphere.origin).Normalized();
+
+
+			if (t < ray.min || t > ray.max)
+			{
+				return false;
+			}
+
+			if (!ignoreHitRecord)
+			{
+				hitRecord.didHit = true;
+				hitRecord.t = t;
+				hitRecord.materialIndex = sphere.materialIndex;
+				hitRecord.origin = P;
+				hitRecord.normal = normal;
+			}
+			return true;
+		}
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
 		{
 			HitRecord temp{};
 			return HitTest_Sphere(sphere, ray, temp, true);
 		}
+
 #pragma endregion
 #pragma region Plane HitTest
 		//PLANE HIT-TESTS
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
 			Vector3 n = plane.normal;
 
 			float t = Vector3::Dot( (plane.origin - ray.origin), n ) / Vector3::Dot(ray.direction, plane.normal);
@@ -96,29 +108,31 @@ namespace dae
 		{
 			//Creating edges
 			Vector3 a = triangle.v1 - triangle.v0;
-			Vector3 b = triangle.v2 - triangle.v0;
+			Vector3 b = triangle.v2 - triangle.v1;
+			Vector3 c = triangle.v0 - triangle.v2;
+
 
 			//Normal of triangle
-			Vector3 normal = Vector3::Cross(a, b);
+			Vector3 triangleNormal = Vector3::Cross(a, b);
 
 			//Check for cullMode
 			switch (triangle.cullMode)
 			{
 			case TriangleCullMode::FrontFaceCulling:
-				if (Vector3::Dot(normal, ray.direction) < 0)
+				if (Vector3::Dot(triangleNormal, ray.direction) < 0)
 				{
 					return false;
 				}
 				break;
 			case TriangleCullMode::BackFaceCulling:
-				if (Vector3::Dot(normal, ray.direction) > 0)
+				if (Vector3::Dot(triangleNormal, ray.direction) > 0)
 				{
 					return false;
 				}
 				break;
 			case TriangleCullMode::NoCulling:
 			default:
-				if (Vector3::Dot(normal, ray.direction) == 0)
+				if (Vector3::Dot(triangleNormal, ray.direction) == 0)
 				{
 					return false;
 				}
@@ -128,7 +142,7 @@ namespace dae
 			Vector3 center = ((triangle.v0 + triangle.v1 + triangle.v2) / 3);
 
 			Vector3 L = center - ray.origin;
-			float t = Vector3::Dot(L, normal) / Vector3::Dot(ray.direction, normal);
+			float t = Vector3::Dot(L, triangleNormal) / Vector3::Dot(ray.direction, triangleNormal);
 
 			if (t < ray.min || t > ray.max)
 			{
@@ -137,9 +151,18 @@ namespace dae
 
 			Vector3 p = ray.origin + t * ray.direction;
 
-			Vector3 edgeA = triangle.v1 - triangle.v0;
 			Vector3 pointToSide = p - triangle.v0;
-			if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
+			if (Vector3::Dot(triangleNormal, Vector3::Cross(a, pointToSide)) < 0)
+			{
+				return false;
+			}
+			pointToSide = p - triangle.v1;
+			if (Vector3::Dot(triangleNormal, Vector3::Cross(b, pointToSide)) < 0)
+			{
+				return false;
+			}
+			pointToSide = p - triangle.v2;
+			if (Vector3::Dot(triangleNormal, Vector3::Cross(c, pointToSide)) < 0)
 			{
 				return false;
 			}
@@ -150,7 +173,7 @@ namespace dae
 				hitRecord.t = t;
 				hitRecord.materialIndex = triangle.materialIndex;
 				hitRecord.origin = p;
-				hitRecord.normal = normal;
+				hitRecord.normal = triangleNormal;
 			}
 			return true;
 		}
@@ -164,44 +187,49 @@ namespace dae
 #pragma region TriangeMesh HitTest
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			std::vector<Vector3> triangleVectors;
-			int triangleCounter{ 0 };
-
 			HitRecord closestRecord{};
+			int normalIndex{};
+			Triangle tempTriangle{};
 
-			for (size_t index = 0; index < mesh.indices.size(); index++)
+			for (size_t index = 0; index < mesh.indices.size(); index += 3)
 			{
-				triangleVectors.push_back(mesh.transformedPositions[mesh.indices[index]]);
-
-				if (triangleVectors.size() == 3)
+				if (index + 2 < mesh.indices.size())
 				{
-					Triangle tempTriangle = { triangleVectors[0], triangleVectors[1], triangleVectors[2], mesh.transformedNormals[triangleCounter]};
+					uint32_t p0 = mesh.indices[index];
+					uint32_t p1 = mesh.indices[index + 1];
+					uint32_t p2 = mesh.indices[index + 2];
+
+
+					tempTriangle =
+					{
+						mesh.transformedPositions[p0],
+						mesh.transformedPositions[p1],
+						mesh.transformedPositions[p2],
+						mesh.transformedNormals[normalIndex]
+					};
+					normalIndex++;
+
 					tempTriangle.cullMode = mesh.cullMode;
 					tempTriangle.materialIndex = mesh.materialIndex;
 
-					HitRecord tempHitRecord{};
-					GeometryUtils::HitTest_Triangle(tempTriangle, ray, tempHitRecord);
-
-					if (triangleCounter == 0)
+					if (GeometryUtils::HitTest_Triangle(tempTriangle, ray, closestRecord, ignoreHitRecord))
 					{
-						closestRecord = tempHitRecord;
+						if (ignoreHitRecord)
+						{
+							return true;
+						}
+						else
+						{
+							if (closestRecord.t < hitRecord.t)
+							{
+								hitRecord = closestRecord;
+							}
+						}
 					}
-					else if (tempHitRecord.t < closestRecord.t)
-					{
-						closestRecord = tempHitRecord;
-					}
-
-					triangleVectors.clear();
-					++triangleCounter;
 				}
 			}
 
-			if (!ignoreHitRecord)
-			{
-				hitRecord = closestRecord;
-			}
-			return true;
-
+			return hitRecord.didHit;
 		}
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
@@ -218,7 +246,7 @@ namespace dae
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
 			//todo W3
-			return origin - light.origin;
+			return light.origin - origin;
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
@@ -230,7 +258,10 @@ namespace dae
 			}
 			else if(light.type == LightType::Point)
 			{
-				return light.color * (light.intensity / ( powf((light.origin.x - target.x), 2.f) + powf((light.origin.y - target.y), 2.f) + powf((light.origin.z - target.z), 2.f)));
+				Vector3 lightPosition{ light.origin };
+				Vector3 PointToShade{ target };
+
+				return light.color * (light.intensity / (lightPosition - PointToShade).SqrMagnitude() );
 			}
 			return {};
 		}

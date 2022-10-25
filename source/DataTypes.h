@@ -125,44 +125,37 @@ namespace dae
 			//3 indices are 1 triangle
 			//indices is index for position
 
-			std::vector<int> oneTriangle;
-			for (size_t index = 0; index < indices.size(); index++)
+			for (size_t index = 0; index < indices.size(); index+= 3)
 			{
-				oneTriangle.push_back(indices[index]);
-				if (oneTriangle.size() == 3)
+				if (index + 3 < indices.size())
 				{
-					//Creating edges
-					Vector3 a = positions[oneTriangle[1]] - positions[oneTriangle[0]];
-					Vector3 b = positions[oneTriangle[2]] - positions[oneTriangle[0]];
+					uint32_t p0 = indices[index];
+					uint32_t p1 = indices[index];
+					uint32_t p2 = indices[index];
 
-					//Normal of triangle
+					Vector3 a = positions[p1] - positions[p0];
+					Vector3 b = positions[p2] - positions[p0];
 					Vector3 normal = Vector3::Cross(a, b);
 
 					normals.push_back(normal);
-
-					oneTriangle.clear();
 				}
 			}
-
-
 		}
 
 		void UpdateTransforms()
 		{
-			//Calculate Final Transform
-			transformedPositions.clear();
-			transformedNormals.clear();
+			const Matrix transform = scaleTransform * rotationTransform * translationTransform;
 
-			const auto finalTransform = rotationTransform * translationTransform * scaleTransform;
-			
-			for (size_t index = 0; index < positions.size(); ++index)
+			transformedPositions.clear();
+			for (size_t index = 0; index < positions.size(); index++)
 			{
-				transformedPositions.push_back(finalTransform.TransformPoint(positions[index]));
+				transformedPositions.push_back(transform.TransformPoint(positions[index]));
 			}
 
-			for (size_t index = 0; index < normals.size(); ++index)
+			transformedNormals.clear();
+			for (size_t index = 0; index < normals.size(); index++)
 			{
-				transformedNormals.push_back(finalTransform.TransformPoint(normals[index]));
+				transformedNormals.push_back(transform.TransformPoint(normals[index]));
 			}
 
 		}

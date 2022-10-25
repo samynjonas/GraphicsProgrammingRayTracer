@@ -107,24 +107,30 @@ namespace dae
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
 			//I Think I need to do this, idk for sure tho
+			ColorRGB f0{};
+			if (m_Metalness == 0.f)
+			{
+				f0 = ColorRGB{ 0.04f, 0.04f, 0.04f };
+			}
+			else
+			{
+				f0 = m_Albedo;
+			}
 
 			Vector3 n{ hitRecord.normal };
-			Vector3 h{ (v + l) / (v + l).Magnitude() };
-			ColorRGB f0{ m_Albedo * m_Metalness };
+			Vector3 h{ ((v + -l) / (v + -l).Magnitude()).Normalized() };
 
 			ColorRGB F = BRDF::FresnelFunction_Schlick(h, v, f0);
 			float D = BRDF::NormalDistribution_GGX(n, h, m_Roughness);
 			float G = BRDF::GeometryFunction_Smith(n, v, l, m_Roughness);
+			float specularDivision = (4 * (Vector3::Dot(v, n) * Vector3::Dot(-l, n)));
 
-			float specularDivision = (4 * Vector3::Dot(v, n) * Vector3::Dot(l, n));
-			ColorRGB specularColor = (D * F * G);
+			ColorRGB ks{ (D * F.r * G) / specularDivision, (D * F.g * G) / specularDivision, (D * F.b * G) / specularDivision };
 
-			ColorRGB ks{ specularColor.r / specularDivision, specularColor.g / specularDivision, specularColor.b / specularDivision };
-
-			ColorRGB kd{};
-			if (m_Metalness < 1) // Non metal
+			ColorRGB kd{ 0, 0, 0 };
+			if (m_Metalness == 0) // Non metal
 			{
-				kd = BRDF::FresnelFunction_Schlick(h, v, f0);
+				kd = ColorRGB{ 1.f - F.r, 1.f - F.g, 1.f - F.b };
 			}
 
 			ColorRGB diffuse = BRDF::Lambert(kd, m_Albedo);

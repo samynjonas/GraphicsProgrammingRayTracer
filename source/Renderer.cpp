@@ -138,34 +138,37 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 
 		for (size_t index = 0; index < lights.size(); index++)
 		{
-			ColorRGB addColor = LightUtils::GetRadiance(lights[index], closestHit.origin) * materials[closestHit.materialIndex]->Shade();
-			finalColor += addColor;
+			Vector3 lightDirection = LightUtils::GetDirectionToLight(lights[index], closestHit.origin + closestHit.normal * 0.01f);
+			lightDirection.Normalize();
 
+			float dotProduct = Vector3::Dot(closestHit.normal, lightDirection);
 			//Dot products always gives 0
-			/*float dotProduct = Vector3::Dot(closestHit.normal, lights[index].direction);
+			
 			if (dotProduct > 0)
-			{
-				ColorRGB addColor = LightUtils::GetRadiance(lights[index], closestHit.origin) * BRDFrgb * dotProduct;
+			{				
+				ColorRGB IncidentRadiance{ LightUtils::GetRadiance(lights[index], closestHit.origin) };
+				ColorRGB BRDF = materials[closestHit.materialIndex]->Shade(closestHit, lightDirection, viewRay.direction);
+
+				ColorRGB addColor = IncidentRadiance * BRDF * dotProduct;
+
 				finalColor += addColor;
-			}*/
-		}
+			}
 
-		if (m_ShadowsEnabled)
-		{
-			for (size_t index = 0; index < lights.size(); index++)
+			if (m_ShadowsEnabled)
 			{
-				Vector3 startPos{ closestHit.normal };
-				//startPos += 0.01f;
-
-				Vector3 lightVector{ LightUtils::GetDirectionToLight(lights[index], closestHit.origin) };
-
-				Ray lightRay{ startPos, lightVector.Normalized(), 0.000001f, lightVector.Magnitude() };
+				Ray lightRay{};
+				lightRay.origin = closestHit.origin;
+				lightRay.direction = LightUtils::GetDirectionToLight(lights[index], lightRay.origin + closestHit.normal * 0.01f);
+				lightRay.min = 0.1f;
+				lightRay.max = lightRay.direction.Magnitude();
+				lightRay.direction.Normalize();
 
 				if (pScene->DoesHit(lightRay))
 				{
 					finalColor *= 0.5f;
 				}
 			}
+
 		}
 	}
 

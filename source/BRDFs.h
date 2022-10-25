@@ -41,9 +41,9 @@ namespace dae
 			Vector3 reflect = l - 2 * Vector3::Dot(n,l) * n;
 
 			float angle = Vector3::Dot(reflect, v);
+			if (angle < 0.f) angle = 0.f;
 
 			float Phong = ks * powf((angle), exp);
-
 			return { Phong, Phong, Phong }; //Dont know what to return here
 		}
 
@@ -56,7 +56,7 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
-			ColorRGB shlick = f0 + ( ColorRGB{1, 1, 1} - f0) * powf((1 - Vector3::Dot(h, v)), 5.f);
+			ColorRGB shlick = f0 + ( ColorRGB{1 - f0.r, 1 - f0.g, 1 - f0.b } - f0) * powf((1 - Vector3::Dot(h, v)), 5.f);
 
 			return shlick;
 		}
@@ -70,9 +70,12 @@ namespace dae
 		 */
 		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
 		{
-			float a = powf(roughness, 2.f);
+			const float a = powf(roughness, 2.f);
+			const float a2 = powf(a, 2.f);
 
-			float normal = powf(a, 2) / (PI * powf((powf(Vector3::Dot(n, h), 2.f) * (powf(a, 2.f) - 1) + 1), 2.f));
+			const float dotSqrt = Vector3::Dot(n, h) * Vector3::Dot(n, h);
+
+			float normal = a2 / (PI * powf(dotSqrt * (a2 - 1) + 1, 2.f));
 
 			return normal;
 		}
@@ -106,7 +109,7 @@ namespace dae
 		 */
 		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
 		{
-			float smith = GeometryFunction_SchlickGGX(n, v, roughness) * GeometryFunction_SchlickGGX(n, l, roughness);			
+			float smith = GeometryFunction_SchlickGGX(n, -v, roughness * roughness) * GeometryFunction_SchlickGGX(n, l, roughness * roughness);			
 			
 			return smith;
 		}
