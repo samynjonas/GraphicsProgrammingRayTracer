@@ -44,7 +44,10 @@ namespace dae
 			up		= Vector3::Cross(forward, right).Normalized();
 
 			cameraONB = { right, up, forward, origin };
-			return cameraONB;
+
+			cameraToWorld = cameraONB;
+
+			return cameraToWorld;
 		}
 
 		void Update(Timer* pTimer)
@@ -70,6 +73,14 @@ namespace dae
 			if (pKeyboardState[SDL_SCANCODE_DOWN])
 			{
 				origin.z += -currentSpeed * deltaTime;
+			}
+			if (pKeyboardState[SDL_SCANCODE_SPACE])
+			{
+				origin.y += currentSpeed * deltaTime;
+			}
+			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
+			{
+				origin.y += -currentSpeed * deltaTime;
 			}
 
 

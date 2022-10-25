@@ -340,19 +340,19 @@ namespace dae {
 		AddPlane(Vector3{ 5.f, 0.f, 0.f },	Vector3{ -1.f, 0.f, 0.f },	matLambert_GrayBlue);
 		AddPlane(Vector3{ -5.f, 0.f, 0.f }, Vector3{ 1.f, 0.f, 0.f },	matLambert_GrayBlue);
 
-		//Triangle
-		/*auto triangle = Triangle{ {-.75f, .5f, .0f}, {-.75f, 2.f, .0f}, {.75f, .5f, 0.f} };
-		triangle.cullMode = TriangleCullMode::NoCulling;
-		triangle.materialIndex = matLambert_White;
+		////Triangle
+		//auto triangle = Triangle{ {-.75f, .5f, .0f}, {-.75f, 2.f, .0f}, {.75f, .5f, 0.f} };
+		//triangle.cullMode = TriangleCullMode::NoCulling;
+		//triangle.materialIndex = matLambert_White;
 
-		m_Triangles.emplace_back(triangle);*/
+		//m_Triangles.emplace_back(triangle);
 
 		//TriangleMesh
 		const auto triangleMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
-		triangleMesh->positions = { {-.75f, -1.f, 0.f}, {-.75f, 1.f, .0f}, {.75f, 1.f, 1.f}, {.75f, -1.f, 0.f} };
+		triangleMesh->positions = { {-0.75f, -1.f, 0.f}, {-0.75f, 1.f, 0.f}, {0.75f, 1.f, 1.f}, {0.75f, -1.f, 0.f} };
 		triangleMesh->indices = {
-			0, 1, 2, //Triangle 1
-			0, 2, 3 //Triangle 2
+			0, 1, 2,	//Triangle 1
+			0, 2, 3		//Triangle 2
 		};
 
 		triangleMesh->CalculateNormals();

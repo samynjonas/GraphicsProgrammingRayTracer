@@ -34,10 +34,9 @@ namespace dae
 			float t0 = dp - tca;
 
 			//Hitpoint
-			Vector3 I = ray.origin + t0 * ray.direction;			
+			Vector3 I = ray.origin + t0 * ray.direction;
 
-			Vector3 normal = (I - sphere.origin).Normalized();
-
+			Vector3 normal = Vector3::Cross(P, tc);
 
 			if (t0 > ray.min && t0 < ray.max)
 			{
@@ -102,6 +101,7 @@ namespace dae
 			//Normal of triangle
 			Vector3 normal = Vector3::Cross(a, b);
 
+			//Check for cullMode
 			switch (triangle.cullMode)
 			{
 			case TriangleCullMode::FrontFaceCulling:
@@ -137,10 +137,8 @@ namespace dae
 
 			Vector3 p = ray.origin + t * ray.direction;
 
-
-			Vector3 edgeA = triangle.v1 - triangle.v2;
+			Vector3 edgeA = triangle.v1 - triangle.v0;
 			Vector3 pointToSide = p - triangle.v0;
-
 			if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
 			{
 				return false;
@@ -166,37 +164,21 @@ namespace dae
 #pragma region TriangeMesh HitTest
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			Vector3 v0{};
-			Vector3 v1{};
-			Vector3 v2{};
-
+			std::vector<Vector3> triangleVectors;
 			int triangleCounter{ 0 };
-			int vectorCounter{ 0 };
 
 			HitRecord closestRecord{};
 
 			for (size_t index = 0; index < mesh.indices.size(); index++)
 			{
-				switch (vectorCounter)
-				{
-				case 0:
-					v0 = mesh.transformedPositions[mesh.indices[index]];
-					vectorCounter++;
-					break;
-				case 1:
-					v1 = mesh.transformedPositions[mesh.indices[index]];
-					vectorCounter++;
-					break;
-				case 2:
-					v2 = mesh.transformedPositions[mesh.indices[index]];
-					vectorCounter++;
-					break;
-				}
+				triangleVectors.push_back(mesh.transformedPositions[mesh.indices[index]]);
 
-				if (vectorCounter == 3)
+				if (triangleVectors.size() == 3)
 				{
-					Triangle tempTriangle = { v0, v1, v2, mesh.transformedNormals[triangleCounter]};
-					
+					Triangle tempTriangle = { triangleVectors[0], triangleVectors[1], triangleVectors[2], mesh.transformedNormals[triangleCounter]};
+					tempTriangle.cullMode = mesh.cullMode;
+					tempTriangle.materialIndex = mesh.materialIndex;
+
 					HitRecord tempHitRecord{};
 					GeometryUtils::HitTest_Triangle(tempTriangle, ray, tempHitRecord);
 
@@ -209,8 +191,8 @@ namespace dae
 						closestRecord = tempHitRecord;
 					}
 
+					triangleVectors.clear();
 					++triangleCounter;
-					vectorCounter = 0;
 				}
 			}
 
