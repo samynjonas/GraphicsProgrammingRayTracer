@@ -393,11 +393,11 @@ namespace dae {
 		const auto matLambert_GrayBlue	= AddMaterial(new Material_Lambert({ .49f, .57f, .57f }, 1.f));
 		const auto matLambert_White		= AddMaterial(new Material_Lambert(colors::White, 1.f));
 
-		AddPlane(Vector3{ 0.f, 0.f, 10.f }, Vector3{ 0.f, 0.f, -1.f }, matLambert_GrayBlue);
-		AddPlane(Vector3{ 0.f, 0.f, 0.f }, Vector3{ 0.f, 1.f, 0.f }, matLambert_GrayBlue);
-		AddPlane(Vector3{ 0.f, 10.f, 0.f }, Vector3{ 0.f, -1.f, 0.f }, matLambert_GrayBlue);
-		AddPlane(Vector3{ 5.f, 0.f, 0.f }, Vector3{ -1.f, 0.f, 0.f }, matLambert_GrayBlue);
-		AddPlane(Vector3{ -5.f, 0.f, 0.f }, Vector3{ 1.f, 0.f, 0.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f, 0.f, 10.f }, Vector3{ 0.f, 0.f, -1.f },	matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f, 0.f, 0.f },	Vector3{ 0.f, 1.f, 0.f },	matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f, 10.f, 0.f }, Vector3{ 0.f, -1.f, 0.f },	matLambert_GrayBlue);
+		AddPlane(Vector3{ 5.f, 0.f, 0.f },	Vector3{ -1.f, 0.f, 0.f },	matLambert_GrayBlue);
+		AddPlane(Vector3{ -5.f, 0.f, 0.f }, Vector3{ 1.f, 0.f, 0.f },	matLambert_GrayBlue);
 
 		AddSphere(Vector3{ -1.75f, 1.f, 0.f },	.75f, matCT_GrayRoughMetal);
 		AddSphere(Vector3{ 0.f, 1.f, 0.f },		.75f, matCT_GrayMediumMetal);

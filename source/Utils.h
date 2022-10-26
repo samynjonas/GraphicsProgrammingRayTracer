@@ -49,7 +49,6 @@ namespace dae
 			Vector3 P = ray.origin + t * ray.direction;
 			Vector3 normal = (P - sphere.origin).Normalized();
 
-
 			if (t < ray.min || t > ray.max)
 			{
 				return false;
