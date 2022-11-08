@@ -188,4 +188,26 @@ namespace dae
 	private:
 		TriangleMesh* pMesh{ nullptr };
 	};
+
+	//+++++++++++++++++++++++++++++++++++++++++
+	//WEEK 4 Test Scene
+	class Scene_W4_ExtraScene final : public Scene
+	{
+	public:
+		Scene_W4_ExtraScene() = default;
+		~Scene_W4_ExtraScene() override = default;
+
+		Scene_W4_ExtraScene(const Scene_W4_ExtraScene&) = delete;
+		Scene_W4_ExtraScene(Scene_W4_ExtraScene&&) noexcept = delete;
+		Scene_W4_ExtraScene& operator=(const Scene_W4_ExtraScene&) = delete;
+		Scene_W4_ExtraScene& operator=(Scene_W4_ExtraScene&&) noexcept = delete;
+
+		void Initialize() override;
+		void Update(Timer* pTimer) override;
+
+	private:
+		TriangleMesh* m_Meshes[1]{};
+
+	
+	};
 }

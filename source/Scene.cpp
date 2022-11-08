@@ -487,4 +487,38 @@ namespace dae {
 
 #pragma endregion
 
+#pragma region SCENE W4 ExtraScene
+	void Scene_W4_ExtraScene::Initialize()
+	{
+		sceneName = "Extra Scene";
+		m_Camera.origin = { 0.f, 3.f, -9.f };
+		m_Camera.fovAngle = 45.f;
+
+		const auto matLambert_GrayBlue	= AddMaterial(new Material_Lambert({ .49f, .57f, .57f }, 1.f));
+		const auto matLambert_White		= AddMaterial(new Material_Lambert(colors::White, 1.f));
+
+		m_Meshes[0] = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		Utils::ParseOBJ("Resources/Monkey.obj",
+			m_Meshes[0]->positions,
+			m_Meshes[0]->normals,
+			m_Meshes[0]->indices);
+
+		m_Meshes[0]->Scale({ 8.f, 1.f, 10.f });
+		m_Meshes[0]->UpdateTransforms();
+
+
+		//Light
+		AddPointLight(Vector3{ 0.f, 5.f, 5.f },		50.f, ColorRGB{ 1.f, 0.61f, .45f });
+		AddPointLight(Vector3{ -2.5f, 5.f, -5.f },	70.f, ColorRGB{ 1.f, 0.8f, .45f });
+		AddPointLight(Vector3{ 2.5f, 2.5f, -5.f },	50.f, ColorRGB{ .34f, 0.47f, .68f });
+
+	}
+
+	void Scene_W4_ExtraScene::Update(Timer* pTimer)
+	{
+		Scene::Update(pTimer);
+	}
+
+#pragma endregion
+
 }

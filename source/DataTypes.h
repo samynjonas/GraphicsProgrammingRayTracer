@@ -91,10 +91,20 @@ namespace dae
 		{
 			translationTransform = Matrix::CreateTranslation(translation);
 		}
+
 		void RotateY(float yaw)
 		{
 			rotationTransform = Matrix::CreateRotationY(yaw);
 		}
+		void RotateX(float pitch)
+		{
+			rotationTransform = Matrix::CreateRotationX(pitch);
+		}
+		void RotateZ(float roll)
+		{
+			rotationTransform = Matrix::CreateRotationZ(roll);
+		}
+
 		void Scale(const Vector3& scale)
 		{
 			scaleTransform = Matrix::CreateScale(scale);
