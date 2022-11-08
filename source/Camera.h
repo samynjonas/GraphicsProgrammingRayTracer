@@ -5,7 +5,7 @@
 
 #include "Math.h"
 #include "Timer.h"
-
+#include <algorithm>
 
 #include <iostream>
 
@@ -24,6 +24,7 @@ namespace dae
 
 		Vector3 origin{};
 		float fovAngle{ 90.f };
+		float fovMultiplier{ 1.0f };
 
 		Vector3 forward{ Vector3::UnitZ };
 
@@ -34,14 +35,15 @@ namespace dae
 		float totalYaw{0.f};
 
 		Matrix cameraToWorld{};
+
 		Matrix CalculateCameraToWorld()
 		{
 			//todo: W2
 			Matrix cameraONB;
-			Vector3 worldUp{ 0, 1, 0 };
+			Vector3 worldUp{ Vector3::UnitY };
 			
 			right	= Vector3::Cross(worldUp, forward).Normalized();
-			up		= Vector3::Cross(forward, right).Normalized();
+			up		= Vector3::Cross(forward, right);
 
 			cameraONB = { right, up, forward, origin };
 
@@ -53,75 +55,62 @@ namespace dae
 		void Update(Timer* pTimer)
 		{
 			const float deltaTime = pTimer->GetElapsed();
-			const float currentSpeed{ 5.f };
+			
+			const float movementSpeed{ 5.f };
+			const float minFov{ 30.f };
+			const float maxFov{ 170.f };
+			const float mouseSpeed{ 2.0f };
+			const float rotateSpeed{ 10.f * TO_RADIANS };
+
+			Vector3 directionVector{};
 
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
-			if (pKeyboardState[SDL_SCANCODE_LEFT])
+			if (pKeyboardState[SDL_SCANCODE_Z] || pKeyboardState[SDL_SCANCODE_W])
 			{
-				origin.x += -currentSpeed * deltaTime;
+				directionVector += forward * movementSpeed * deltaTime;
 			}
-			if (pKeyboardState[SDL_SCANCODE_RIGHT])
+			if (pKeyboardState[SDL_SCANCODE_S])
 			{
-				origin.x += currentSpeed * deltaTime;
+				directionVector -= forward * movementSpeed * deltaTime;
 			}
-			if (pKeyboardState[SDL_SCANCODE_UP])
+			if (pKeyboardState[SDL_SCANCODE_Q] || pKeyboardState[SDL_SCANCODE_A])
 			{
-				origin.z += currentSpeed * deltaTime;
+				directionVector -= right * movementSpeed * deltaTime;
 			}
-			if (pKeyboardState[SDL_SCANCODE_DOWN])
+			if (pKeyboardState[SDL_SCANCODE_D])
 			{
-				origin.z += -currentSpeed * deltaTime;
+				directionVector += right * movementSpeed * deltaTime;
 			}
-			if (pKeyboardState[SDL_SCANCODE_SPACE])
-			{
-				origin.y += currentSpeed * deltaTime;
-			}
-			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
-			{
-				origin.y += -currentSpeed * deltaTime;
-			}
-
 
 			//Mouse Input
-			int prevMouseX{},	prevMouseY{};
 			int mouseX{},		mouseY{};
-			const int offset{ 5 };
-			const float angleChange{ 1.f * deltaTime };
 
-			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);			
-			
-			if ((mouseState & SDL_BUTTON_RMASK) != 0)
+			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
+			if ((mouseState & SDL_BUTTON_LMASK) != 0)
 			{
-				//Right mousebutton pressed
-				//Left mousebutton pressed
-				if (mouseX > prevMouseX + offset)
-				{
-					//moving right
-					forward = Matrix::CreateRotationY(angleChange).TransformVector(forward);
-				}
-				else if (mouseX < prevMouseX - offset)
-				{
-					//moving left
-					forward = Matrix::CreateRotationY(-angleChange).TransformVector(forward);
-				}
-
-				if (mouseY > prevMouseY + offset)
-				{
-					//moving up
-					forward = Matrix::CreateRotationX(-angleChange).TransformVector(forward);
-				}
-				else if (mouseY < prevMouseY - offset)
-				{
-					//moving down
-					forward = Matrix::CreateRotationX(angleChange).TransformVector(forward);
-				}
-
+				directionVector -= forward * (mouseY * mouseSpeed * deltaTime);
+				totalYaw	+= mouseX * rotateSpeed * deltaTime;
 			}
-			forward.Normalize();
+			else if ((mouseState & SDL_BUTTON_RMASK) != 0)
+			{
+				totalYaw	+= mouseX * rotateSpeed * deltaTime;
+				totalPitch	-= mouseY * rotateSpeed * deltaTime;
+			}
+			totalPitch = std::clamp(totalPitch, -89.f * TO_RADIANS, 89.0f * TO_RADIANS);
 
-			//todo: W2
+			const float shiftSpeed{ 4.0f };
+			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
+			{
+				directionVector *= shiftSpeed * deltaTime;
+			}
+
+			origin += directionVector;
+
+			Matrix rotationMatrix = Matrix::CreateRotationX(totalPitch) * Matrix::CreateRotationY(totalYaw);
+
+			forward = rotationMatrix.TransformVector(Vector3::UnitZ);
 		}
 	};
 }
