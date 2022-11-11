@@ -103,7 +103,7 @@ namespace dae
 			const float shiftSpeed{ 4.0f };
 			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
 			{
-				directionVector *= shiftSpeed * deltaTime;
+				directionVector *= shiftSpeed;
 			}
 
 			origin += directionVector;

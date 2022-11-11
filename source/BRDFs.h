@@ -38,12 +38,12 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			Vector3 reflect = l - 2 * Vector3::Dot(n,l) * n;
+			//Vector3 reflect = l - 2 * Vector3::Dot(n,l) * n;
+			const Vector3 reflect{ Vector3::Reflect(l, n)};
+			const float angle = std::max(Vector3::Dot(reflect, v), 0.f);
 
-			float angle = Vector3::Dot(reflect, v);
-			if (angle < 0.f) angle = 0.f;
+			const float Phong = ks * powf((angle), exp);
 
-			float Phong = ks * powf((angle), exp);
 			return { Phong, Phong, Phong }; //Dont know what to return here
 		}
 
@@ -56,8 +56,7 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
-			ColorRGB shlick = f0 + ( ColorRGB{1 - f0.r, 1 - f0.g, 1 - f0.b } - f0) * powf((1 - Vector3::Dot(h, v)), 5.f);
-
+			const ColorRGB shlick = ( f0 + (ColorRGB{ 1.f, 1.f, 1.f } - f0) * powf((1 - (std::max(Vector3::Dot(h, v), 0.f))), 5));
 			return shlick;
 		}
 
@@ -73,9 +72,10 @@ namespace dae
 			const float a = powf(roughness, 2.f);
 			const float a2 = powf(a, 2.f);
 
-			const float dotSqrt = Vector3::Dot(n, h) * Vector3::Dot(n, h);
+			const float dotnh{ std::max(Vector3::Dot(n, h), 0.f) };
+			const float dotSqrt = dotnh * dotnh;
 
-			float normal = a2 / (PI * powf(dotSqrt * (a2 - 1) + 1, 2.f));
+			const float normal = a2 / (PI * powf(dotSqrt * (a2 - 1) + 1, 2.f));
 
 			return normal;
 		}
@@ -90,11 +90,11 @@ namespace dae
 		 */
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
-			float a = powf(roughness, 2.f);
+			const float a = powf(roughness, 2.f);
+			const float k = (powf((a + 1.f), 2.f)) / 8.f;
+			const float dotnv{ std::max(Vector3::Dot(n, v), 0.f) };
 
-			float k = (powf((a + 1), 2.f)) / 8.f;
-
-			float shlickGGX = Vector3::Dot(n, v) / (Vector3::Dot(n, v) * (1 - k) + k);
+			const float shlickGGX = dotnv / (dotnv * (1 - k) + k);
 
 			return shlickGGX;
 		}
@@ -109,7 +109,7 @@ namespace dae
 		 */
 		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
 		{
-			float smith = GeometryFunction_SchlickGGX(n, -v, roughness * roughness) * GeometryFunction_SchlickGGX(n, l, roughness * roughness);			
+			const float smith = GeometryFunction_SchlickGGX(n, v, roughness * roughness) * GeometryFunction_SchlickGGX(n, l, roughness * roughness);			
 			
 			return smith;
 		}

@@ -64,8 +64,8 @@ namespace dae
 		}
 
 	private:
-		ColorRGB m_DiffuseColor{colors::White};
-		float m_DiffuseReflectance{1.f}; //kd
+		ColorRGB m_DiffuseColor{ colors::White };
+		float m_DiffuseReflectance{ 1.f }; //kd
 	};
 #pragma endregion
 
@@ -83,14 +83,14 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			return BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor) + BRDF::Phong(m_SpecularReflectance, m_PhongExponent, l, -v, hitRecord.normal);
+			return BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor) + BRDF::Phong(m_SpecularReflectance, m_PhongExponent, l, v, hitRecord.normal);
 		}
 
 	private:
-		ColorRGB m_DiffuseColor{colors::White};
-		float m_DiffuseReflectance{0.5f}; //kd
-		float m_SpecularReflectance{0.5f}; //ks
-		float m_PhongExponent{1.f}; //Phong Exponent
+		ColorRGB m_DiffuseColor{ colors::White };
+		float m_DiffuseReflectance{ 0.5f }; //kd
+		float m_SpecularReflectance{ 0.5f }; //ks
+		float m_PhongExponent{ 1.f }; //Phong Exponent
 	};
 #pragma endregion
 
@@ -106,7 +106,6 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//I Think I need to do this, idk for sure tho
 			ColorRGB f0{};
 			if (m_Metalness == 0.f)
 			{
@@ -117,33 +116,37 @@ namespace dae
 				f0 = m_Albedo;
 			}
 
-			Vector3 n{ hitRecord.normal };
-			Vector3 h{ ((v + -l) / (v + -l).Magnitude()).Normalized() };
+			const Vector3 n{ hitRecord.normal };
+			const Vector3 h{ (l - v).Normalized() };
 
-			ColorRGB F = BRDF::FresnelFunction_Schlick(h, v, f0);
-			float D = BRDF::NormalDistribution_GGX(n, h, m_Roughness);
-			float G = BRDF::GeometryFunction_Smith(n, v, l, m_Roughness);
-			float specularDivision = (4 * (Vector3::Dot(v, n) * Vector3::Dot(-l, n)));
+			const ColorRGB	F = BRDF::FresnelFunction_Schlick(h, -v, f0);
+			const float		D = BRDF::NormalDistribution_GGX(n, h, m_Roughness);
+			const float		G = BRDF::GeometryFunction_Smith(n, -v, l, m_Roughness);
+			const float		specularDivision = 4 * (Vector3::Dot(-v, n) * Vector3::Dot(l, n));
 
-			ColorRGB ks{ (D * F.r * G) / specularDivision, (D * F.g * G) / specularDivision, (D * F.b * G) / specularDivision };
+			ColorRGB ks{ F * D * G };
+			ks /= specularDivision;
+
 
 			ColorRGB kd{ 0, 0, 0 };
 			if (m_Metalness == 0) // Non metal
 			{
-				kd = ColorRGB{ 1.f - F.r, 1.f - F.g, 1.f - F.b };
+				kd = BRDF::Lambert({ 1.f - F.r, 1.f - F.g, 1.f - F.b }, m_Albedo);
+			}
+			else
+			{
+				kd = BRDF::Lambert(0, m_Albedo);
 			}
 
-			ColorRGB diffuse = BRDF::Lambert(kd, m_Albedo);
-
-			ColorRGB finalColor = diffuse + ks;
+			ColorRGB finalColor = kd + ks;
 
 			return finalColor;
 		}
 
 	private:
-		ColorRGB m_Albedo{0.955f, 0.637f, 0.538f}; //Copper
-		float m_Metalness{1.0f};
-		float m_Roughness{0.1f}; // [1.0 > 0.0] >> [ROUGH > SMOOTH]
+		ColorRGB m_Albedo{ 0.955f, 0.637f, 0.538f }; //Copper
+		float m_Metalness{ 1.0f };
+		float m_Roughness{ 0.1f }; // [1.0 > 0.0] >> [ROUGH > SMOOTH]
 	};
 #pragma endregion
 }

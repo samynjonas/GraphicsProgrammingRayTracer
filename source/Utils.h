@@ -31,10 +31,12 @@ namespace dae
 			}
 
 
-			float t = (-B - sqrtf(discriminat)) / (2 * A);
+			float sqrtD = sqrtf(discriminat);
+			float t = (-B - sqrtD) / (2 * A);
+
 			if (t < ray.min)
 			{
-				t = (-B + sqrtf(discriminat)) / (2 * A);
+				t = (-B + sqrtD) / (2 * A);
 			}
 
 			////Geometric
@@ -76,10 +78,11 @@ namespace dae
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			Vector3 n = plane.normal;
+			float dotOpOrN{ Vector3::Dot((plane.origin - ray.origin), n) };
 
-			float t = Vector3::Dot( (plane.origin - ray.origin), n ) / Vector3::Dot(ray.direction, plane.normal);
+			float t = dotOpOrN / Vector3::Dot(ray.direction, plane.normal);
 
-			Vector3 I = ray.origin + ((Vector3::Dot((plane.origin - ray.origin), n) / Vector3::Dot(ray.direction, n))) * ray.direction;
+			Vector3 I = ray.origin + (dotOpOrN / Vector3::Dot(ray.direction, n)) * ray.direction;
 			if (t > ray.min && t < ray.max)
 			{
 				if (!ignoreHitRecord)
@@ -213,8 +216,6 @@ namespace dae
 			{
 				return false;
 			}
-
-
 
 			HitRecord closestRecord{};
 			int normalIndex{};

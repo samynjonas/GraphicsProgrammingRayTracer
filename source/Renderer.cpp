@@ -38,7 +38,7 @@ void Renderer::Render(Scene* pScene) const
 	float aspectRatio{ m_Width / float(m_Height) };
 
 	//Calculate FOV
-	float fovAngle	= pScene->GetCamera().fovAngle * M_PI / 180;
+	float fovAngle	= pScene->GetCamera().fovAngle * PI / 180.f;
 	float fov		= tanf(fovAngle / 2);
 
 	//Ask materials and lights
@@ -134,25 +134,11 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 	pScene->GetClosestHit(viewRay, closestHit);
 	if (closestHit.didHit)
 	{
-		//finalColor = materials[closestHit.materialIndex]->Shade();
-
 		for (size_t index = 0; index < lights.size(); index++)
 		{
 			Vector3 lightDirection = LightUtils::GetDirectionToLight(lights[index], closestHit.origin + closestHit.normal * 0.01f);
-			lightDirection.Normalize();
-
-			float dotProduct = Vector3::Dot(closestHit.normal, lightDirection);
-			//Dot products always gives 0
-			
-			if (dotProduct > 0)
-			{				
-				ColorRGB IncidentRadiance{ LightUtils::GetRadiance(lights[index], closestHit.origin) };
-				ColorRGB BRDF = materials[closestHit.materialIndex]->Shade(closestHit, lightDirection, viewRay.direction);
-
-				ColorRGB addColor = IncidentRadiance * BRDF * dotProduct;
-
-				finalColor += addColor;
-			}
+			const float normalLight{ Vector3::Dot(closestHit.normal, lightDirection)};
+			lightDirection.Normalize();			
 
 			if (m_ShadowsEnabled)
 			{
@@ -165,10 +151,31 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 
 				if (pScene->DoesHit(lightRay))
 				{
-					finalColor *= 0.5f;
+					continue;
 				}
 			}
 
+
+			switch (m_CurrentLightingMode)
+			{
+			case dae::Renderer::LightingMode::ObservedArea:
+				finalColor += ColorRGB{ normalLight, normalLight, normalLight };
+				break;
+			case dae::Renderer::LightingMode::Radiance:
+				finalColor += LightUtils::GetRadiance(lights[index], closestHit.origin);				
+				break;
+			case dae::Renderer::LightingMode::BRDF:
+				finalColor += materials[closestHit.materialIndex]->Shade(closestHit, lightDirection, rayDirection);
+				break;
+			case dae::Renderer::LightingMode::Combined:
+				const float dotProduct = std::max(Vector3::Dot(closestHit.normal, lightDirection), 0.f);
+				//Dot products always gives 0
+				const ColorRGB IncidentRadiance{ LightUtils::GetRadiance(lights[index], closestHit.origin) };
+				const ColorRGB BRDF = materials[closestHit.materialIndex]->Shade(closestHit, lightDirection, viewRay.direction);
+
+				finalColor += IncidentRadiance * BRDF * dotProduct;
+				break;
+			}
 		}
 	}
 
@@ -190,9 +197,10 @@ void Renderer::ModeSwitcher()
 {
 	int currentMode{ int(m_CurrentLightingMode) };
 
-	++currentMode% int(LightingMode::Combined);
+	++currentMode;
+	currentMode %= (int(LightingMode::Combined) + 1);
 
-	static_cast<LightingMode>(currentMode);
+	m_CurrentLightingMode = static_cast<LightingMode>(currentMode);
 }
 
 void Renderer::SwitchShadows()
