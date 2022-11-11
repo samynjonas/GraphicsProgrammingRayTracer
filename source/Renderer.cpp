@@ -16,8 +16,8 @@
 
 using namespace dae;
 
-//#define ASYNC
-#define PARALLEL_FOR
+#define ASYNC
+//#define PARALLEL_FOR
 
 Renderer::Renderer(SDL_Window * pWindow) :
 	m_pWindow(pWindow),
@@ -201,9 +201,37 @@ void Renderer::ModeSwitcher()
 	currentMode %= (int(LightingMode::Combined) + 1);
 
 	m_CurrentLightingMode = static_cast<LightingMode>(currentMode);
+
+	std::cout << "------------\nCurrent light mode: ";
+	switch (m_CurrentLightingMode)
+	{
+	case dae::Renderer::LightingMode::ObservedArea:
+		std::cout << "Observed Area\n------------\n";
+		break;
+	case dae::Renderer::LightingMode::Radiance:
+		std::cout << "Radiance\n------------\n";
+		break;
+	case dae::Renderer::LightingMode::BRDF:
+		std::cout << "BRDF\n------------\n";
+		break;
+	case dae::Renderer::LightingMode::Combined:
+		std::cout << "Combined\n------------\n";
+		break;
+	}
+
 }
 
 void Renderer::SwitchShadows()
 {
 	m_ShadowsEnabled = !m_ShadowsEnabled;
+
+	std::cout << "------------\nTurned shadows: ";
+	if (m_ShadowsEnabled)
+	{
+		std::cout << "on\n------------\n";
+	}
+	else
+	{
+		std::cout << "off\n------------\n";
+	}
 }
